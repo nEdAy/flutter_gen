@@ -2,10 +2,11 @@ name: test
 
 flutter_gen:
   output: lib/gen/ # Optional (default: lib/gen/)
-  line_length: 80   # Optional (default: 80)
+  line_length: 80 # Optional (default: 80)
 
   assets:
-    style: snake-case
+    outputs:
+      style: snake-case
 
 flutter:
   assets:
@@ -17,5 +18,5 @@ flutter:
     - assets/images/icons/kmm.svg
     - assets/images/icons/paint.svg
     - assets/images/icons/dart@test.svg
-    - assets/json/fruits.json
+    - assets/json/
     - pictures/chip5.jpg

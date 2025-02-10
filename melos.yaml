@@ -2,58 +2,122 @@ name: FlutterGen
 
 packages:
   - packages/**
-  - example/*
+  - integrations/**
+  - examples/**
 
 ide:
-  intellij: true
-  vscode: true
+  intellij:
+    enabled: true
+    moduleNamePrefix: ''
+
+command:
+  clean:
+    hooks:
+      post:
+        run: flutter clean
+        exec:
+          concurrency: 1
+        description: flutter clean
 
 scripts:
-  pub:upgrade:
-    run: |
-      melos exec -- flutter pub upgrade
+  upgrade:
+    run: dart pub upgrade
+    exec:
+      concurrency: 1
+    packageFilters:
+      flutter: false
+    description: dart pub upgrade
 
-  analyze: melos exec -- dart analyze .
+  analyze:
+    exec: flutter analyze
+    description: flutter analyze
 
-  format: bash ./scripts/dartfmt.sh
-
-  gen:build_runner:
-    run: |
-      melos exec -- dart pub run build_runner build --delete-conflicting-outputs
-    select-package:
-      ignore: example
-      depends-on: 'build_runner'
+  format:
+    run: dart format --set-exit-if-changed .
+    description: dart format --set-exit-if-changed .
 
   build:
-    run: |
-      melos exec -- flutter build apk
-    select-package:
+    exec: flutter build apk
+    packageFilters:
       scope: example
+    description: flutter build apk
 
-  example:command:
+  gen:build_runner:
+    exec: dart run build_runner build --delete-conflicting-outputs
+    packageFilters:
+      ignore:
+        - example
+        - example_resources
+      dependsOn: build_runner
+    description: dart run build_runner build --delete-conflicting-outputs
+
+  gen:examples:command:
+    exec: dart ../../packages/command/bin/flutter_gen_command.dart
+    packageFilters:
+      scope:
+        - example
+        - example_resources
+    description: dart ../../packages/command/bin/flutter_gen_command.dart
+
+  gen:examples:build_runner:
+    run: flutter pub run build_runner build --delete-conflicting-outputs
+    exec:
+      concurrency: 1
+    packageFilters:
+      scope:
+        - example
+        - example_resources
+    description: flutter pub run build_runner build --delete-conflicting-outputs
+
+  test:
     run: |
-      melos exec \
-      -- dart ../packages/command/bin/flutter_gen_command.dart --config pubspec.yaml
-    select-package:
-      scope: example
+      melos test:dart --no-select
+      melos test:flutter --no-select
+    description: dart & flutter test
 
-  example:build_runner:
-    # FIXME: https://github.com/invertase/melos/issues/117
-    # run: |
-    #   melos exec \
-    #   -- flutter pub run build_runner build --delete-conflicting-outputs
-    run: |
-      melos exec \
-      -- dart pub global run build_runner build --delete-conflicting-outputs
-    select-package:
-      scope: example
+  test:dart:
+    run: dart test --concurrency=1
+    exec:
+      concurrency: 1
+      failFast: true
+    packageFilters:
+      flutter: false
+      dependsOn: test
+    description: dart test
 
-  unit:test:
-    run: melos exec -- dart run test
-    select-package:
-      dir-exists: test
+  test:flutter:
+    run: flutter test --concurrency=1
+    exec:
+      concurrency: 1
+      failFast: true
+    packageFilters:
+      flutter: true
+      dependsOn: flutter_test
+    description: flutter test
 
   coverage:
     run: |
       bash ./scripts/coverage.sh packages/core
-      bash ./scripts/codecov.sh ${CODECOV_TOKEN}
+    description: bash ./scripts/coverage.sh packages/core
+
+  publish:force:
+    run: dart pub publish -f
+    exec:
+      concurrency: 1
+      failFast: true
+    packageFilters:
+      scope:
+        - flutter_gen
+        - flutter_gen_core
+        - flutter_gen_runner
+
+  publish:dry:
+    run: dart pub publish --dry-run
+    exec:
+      concurrency: 1
+      failFast: true
+    packageFilters:
+      scope:
+        - flutter_gen
+        - flutter_gen_core
+        - flutter_gen_runner
