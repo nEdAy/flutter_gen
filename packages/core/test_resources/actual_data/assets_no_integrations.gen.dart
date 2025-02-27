@@ -3,7 +3,9 @@
 ///  FlutterGen
 /// *****************************************************
 
-// ignore_for_file: directives_ordering,unnecessary_import
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal,deprecated_member_use
 
 import 'package:flutter/widgets.dart';
 
@@ -12,6 +14,9 @@ class $PicturesGen {
 
   /// File path: pictures/chip5.jpg
   AssetGenImage get chip5 => const AssetGenImage('pictures/chip5.jpg');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [chip5];
 }
 
 class $AssetsImagesGen {
@@ -23,8 +28,13 @@ class $AssetsImagesGen {
   /// File path: assets/images/chip2.jpg
   AssetGenImage get chip2 => const AssetGenImage('assets/images/chip2.jpg');
 
+  /// Directory path: assets/images/chip3
   $AssetsImagesChip3Gen get chip3 => const $AssetsImagesChip3Gen();
+
+  /// Directory path: assets/images/chip4
   $AssetsImagesChip4Gen get chip4 => const $AssetsImagesChip4Gen();
+
+  /// Directory path: assets/images/icons
   $AssetsImagesIconsGen get icons => const $AssetsImagesIconsGen();
 
   /// File path: assets/images/logo.png
@@ -37,13 +47,23 @@ class $AssetsImagesGen {
   /// File path: assets/images/profile.png
   AssetGenImage get profilePng =>
       const AssetGenImage('assets/images/profile.png');
+
+  /// List of all assets
+  List<AssetGenImage> get values =>
+      [chip1, chip2, logo, profileJpg, profilePng];
 }
 
 class $AssetsJsonGen {
   const $AssetsJsonGen();
 
-  /// File path: assets/json/fruits.json
-  String get fruits => 'assets/json/fruits.json';
+  /// File path: assets/json/list.json
+  String get list => 'assets/json/list.json';
+
+  /// File path: assets/json/map.json
+  String get map => 'assets/json/map.json';
+
+  /// List of all assets
+  List<String> get values => [list, map];
 }
 
 class $AssetsImagesChip3Gen {
@@ -52,6 +72,9 @@ class $AssetsImagesChip3Gen {
   /// File path: assets/images/chip3/chip3.jpg
   AssetGenImage get chip3 =>
       const AssetGenImage('assets/images/chip3/chip3.jpg');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [chip3];
 }
 
 class $AssetsImagesChip4Gen {
@@ -60,6 +83,9 @@ class $AssetsImagesChip4Gen {
   /// File path: assets/images/chip4/chip4.jpg
   AssetGenImage get chip4 =>
       const AssetGenImage('assets/images/chip4/chip4.jpg');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [chip4];
 }
 
 class $AssetsImagesIconsGen {
@@ -76,50 +102,69 @@ class $AssetsImagesIconsGen {
 
   /// File path: assets/images/icons/paint.svg
   String get paint => 'assets/images/icons/paint.svg';
+
+  /// List of all assets
+  List<String> get values => [dartTest, fuchsia, kmm, paint];
 }
 
 class Assets {
-  Assets._();
+  const Assets._();
 
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsJsonGen json = $AssetsJsonGen();
   static const $PicturesGen pictures = $PicturesGen();
 }
 
-class AssetGenImage extends AssetImage {
-  const AssetGenImage(String assetName) : super(assetName);
+class AssetGenImage {
+  const AssetGenImage(
+    this._assetName, {
+    this.size,
+    this.flavors = const {},
+  });
+
+  final String _assetName;
+
+  final Size? size;
+  final Set<String> flavors;
 
   Image image({
     Key? key,
+    AssetBundle? bundle,
     ImageFrameBuilder? frameBuilder,
-    ImageLoadingBuilder? loadingBuilder,
     ImageErrorWidgetBuilder? errorBuilder,
     String? semanticLabel,
     bool excludeFromSemantics = false,
+    double? scale,
     double? width,
     double? height,
     Color? color,
+    Animation<double>? opacity,
     BlendMode? colorBlendMode,
     BoxFit? fit,
     AlignmentGeometry alignment = Alignment.center,
     ImageRepeat repeat = ImageRepeat.noRepeat,
     Rect? centerSlice,
     bool matchTextDirection = false,
-    bool gaplessPlayback = false,
+    bool gaplessPlayback = true,
     bool isAntiAlias = false,
-    FilterQuality filterQuality = FilterQuality.low,
+    String? package,
+    FilterQuality filterQuality = FilterQuality.medium,
+    int? cacheWidth,
+    int? cacheHeight,
   }) {
-    return Image(
+    return Image.asset(
+      _assetName,
       key: key,
-      image: this,
+      bundle: bundle,
       frameBuilder: frameBuilder,
-      loadingBuilder: loadingBuilder,
       errorBuilder: errorBuilder,
       semanticLabel: semanticLabel,
       excludeFromSemantics: excludeFromSemantics,
+      scale: scale,
       width: width,
       height: height,
       color: color,
+      opacity: opacity,
       colorBlendMode: colorBlendMode,
       fit: fit,
       alignment: alignment,
@@ -128,9 +173,25 @@ class AssetGenImage extends AssetImage {
       matchTextDirection: matchTextDirection,
       gaplessPlayback: gaplessPlayback,
       isAntiAlias: isAntiAlias,
+      package: package,
       filterQuality: filterQuality,
+      cacheWidth: cacheWidth,
+      cacheHeight: cacheHeight,
     );
   }
 
-  String get path => assetName;
+  ImageProvider provider({
+    AssetBundle? bundle,
+    String? package,
+  }) {
+    return AssetImage(
+      _assetName,
+      bundle: bundle,
+      package: package,
+    );
+  }
+
+  String get path => _assetName;
+
+  String get keyName => _assetName;
 }

@@ -2,46 +2,48 @@ import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
 import 'package:dartx/dartx.dart';
+import 'package:flutter_gen_core/generators/generator_helper.dart';
+import 'package:flutter_gen_core/settings/color_path.dart';
+import 'package:flutter_gen_core/settings/pubspec.dart';
+import 'package:flutter_gen_core/utils/color.dart';
+import 'package:flutter_gen_core/utils/error.dart';
+import 'package:flutter_gen_core/utils/string.dart';
 import 'package:path/path.dart';
 import 'package:xml/xml.dart';
-
-import '../settings/color_path.dart';
-import '../settings/pubspec.dart';
-import '../utils/color.dart';
-import '../utils/error.dart';
-import '../utils/string.dart';
-import 'generator_helper.dart';
 
 String generateColors(
   File pubspecFile,
   DartFormatter formatter,
-  FlutterGenColors colors,
+  FlutterGenColors colorsConfig,
 ) {
-  if (colors.inputs.isEmpty) {
+  if (colorsConfig.inputs.isEmpty) {
     throw const InvalidSettingsException(
-        'The value of "flutter_gen/colors:" is incorrect.');
+      'The value of "flutter_gen/colors:" is incorrect.',
+    );
   }
 
   final buffer = StringBuffer();
+  final className = colorsConfig.outputs.className;
   buffer.writeln(header);
-  buffer.writeln(ignoreAnalysis);
+  buffer.writeln(ignore);
   buffer.writeln("import 'package:flutter/painting.dart';");
   buffer.writeln("import 'package:flutter/material.dart';");
   buffer.writeln();
-  buffer.writeln('class ColorName {');
-  buffer.writeln('ColorName._();');
+  buffer.writeln('class $className {');
+  buffer.writeln('$className._();');
   buffer.writeln();
 
   final colorList = <_Color>[];
-  colors.inputs
+  colorsConfig.inputs
       .map((file) => ColorPath(join(pubspecFile.parent.path, file)))
       .forEach((colorFile) {
     final data = colorFile.file.readAsStringSync();
     if (colorFile.isXml) {
       colorList.addAll(
-          XmlDocument.parse(data).findAllElements('color').map((element) {
-        return _Color.fromXmlElement(element);
-      }));
+        XmlDocument.parse(data).findAllElements('color').map((element) {
+          return _Color.fromXmlElement(element);
+        }),
+      );
     } else {
       throw 'Not supported file type ${colorFile.mime}.';
     }
@@ -104,6 +106,7 @@ class _Color {
   _Color.fromXmlElement(XmlElement element)
       : this(
           element.getAttribute('name')!,
+          // ignore: deprecated_member_use
           element.text,
           element.getAttribute('type')?.split(' ') ?? List.empty(),
         );

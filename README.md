@@ -1,20 +1,17 @@
 <p align="center">
   <a href="https://pub.dev/packages/flutter_gen">
-    <img src="https://github.com/FlutterGen/flutter_gen/raw/main/art/logo.png" width="480px"/>
+    <img src="https://github.com/FlutterGen/flutter_gen/raw/main/art/logo.png" width="480px" alt="Logo"/>
   </a>
 </p>
 <p align="center">
   <a href="https://pub.dartlang.org/packages/flutter_gen">
-    <img src="https://img.shields.io/pub/v/flutter_gen.svg">
+    <img src="https://img.shields.io/pub/v/flutter_gen.svg" alt="Pub">
   </a>
   <a href="https://github.com/FlutterGen/flutter_gen/actions?query=workflow%3A%22Dart+CI%22">
-    <img src="https://github.com/FlutterGen/flutter_gen/workflows/Dart%20CI/badge.svg" />
+    <img src="https://github.com/FlutterGen/flutter_gen/workflows/Build/badge.svg" alt="Build Status"/>
   </a>
   <a href="https://codecov.io/gh/FlutterGen/flutter_gen">
-    <img src="https://codecov.io/gh/FlutterGen/flutter_gen/branch/main/graph/badge.svg" />
-  </a>
-  <a href="https://pub.dev/packages/flutter_lints">
-    <img src="https://img.shields.io/badge/style-flutter__lints-40c4ff.svg" />
+    <img src="https://codecov.io/gh/FlutterGen/flutter_gen/branch/main/graph/badge.svg" alt="Coverage"/>
   </a>
 </p>
 
@@ -58,18 +55,35 @@ Widget build(BuildContext context) {
 
 ### Homebrew
 
-Works with MacOS and Linux.
+Works with macOS and Linux.
 
 ```sh
-$ brew install FlutterGen/tap/fluttergen
+brew install FlutterGen/tap/fluttergen
 ```
+
+### asdf
+
+Works with macOS and Linux.
+asdf-fluttergen is compatible with [mise](https://mise.jdx.dev/).
+
+```sh
+# add plugin
+asdf plugin add fluttergen
+# or
+asdf plugin add fluttergen https://github.com/FlutterGen/asdf-fluttergen.git
+
+# install fluttergen
+asdf install fluttergen latest
+```
+
+See also: [FlutterGen/asdf-fluttergen](https://github.com/FlutterGen/asdf-fluttergen)
 
 ### Pub Global
 
-Works with MacOS, Linux and Windows.
+Works with macOS, Linux and Windows.
 
 ```sh
-$ dart pub global activate flutter_gen
+dart pub global activate flutter_gen
 ```
 
 You might need to [set up your path](https://dart.dev/tools/pub/cmd/pub-global#running-a-script-from-your-path).
@@ -87,29 +101,41 @@ dev_dependencies:
 2. Install [FlutterGen]
 
 ```sh
-$ flutter pub get
+flutter pub get
 ```
 
 3. Use [FlutterGen]
 
+```sh
+dart run build_runner build
 ```
-$ flutter packages pub run build_runner build
+
+### GitHub Actions
+
+Works with macOS and Linux.
+
+```yaml
+- uses: FlutterGen/setup-fluttergen@v1
+  with:
+    version: ${{ fluttergen_version }}
 ```
+
+See also: [FlutterGen/setup-fluttergen](https://github.com/FlutterGen/setup-fluttergen)
 
 ## Usage
 
 Run `fluttergen` after the configuration [`pubspec.yaml`](https://dart.dev/tools/pub/pubspec).
 
 ```sh
-$ fluttergen -h
+fluttergen -h
 
-$ fluttergen -c example/pubspec.yaml
+fluttergen -c example/pubspec.yaml
 ```
 
 ## Configuration file
 
 [FlutterGen] generates dart files based on the key **`flutter`** and **`flutter_gen`** of [`pubspec.yaml`](https://dart.dev/tools/pub/pubspec).  
-Default configuration can be found [here](#default-configuration). 
+Default configuration can be found [here](https://github.com/FlutterGen/flutter_gen/tree/main/packages/core/lib/settings/config_default.dart). 
 
 ```yaml
 # pubspec.yaml
@@ -121,9 +147,10 @@ flutter_gen:
 
   # Optional
   integrations:
+    image: true
     flutter_svg: true
-    flare_flutter: true
     rive: true
+    lottie: true
 
   colors:
     inputs:
@@ -142,11 +169,31 @@ flutter:
           style: italic
 ```
 
+### build.yaml
+
+You can also configure generate options in the `build.yaml`, it will be read before the `pubspec.yaml` if it exists.
+
+
+```yaml
+# build.yaml
+# ...
+
+targets:
+  $default:
+    builders:
+      flutter_gen_runner: # or flutter_gen
+        options: 
+          output: lib/build_gen/ # Optional (default: lib/gen/)
+          line_length: 120 # Optional (default: 80)
+```
+
 ## Available Parsers
 
 ### Assets
 
-Just follow the doc [Adding assets and images#Specifying assets](https://flutter.dev/docs/development/ui/assets-and-images#specifying-assets) to specify assets, then [FlutterGen] will generate related dart files.  
+Following the doc
+[Adding assets and images#Specifying assets](https://flutter.dev/docs/development/ui/assets-and-images#specifying-assets)
+to specify assets, then [FlutterGen] will generate related dart files.  
 No other specific configuration is required.  
 _Ignore duplicated._
 
@@ -167,6 +214,132 @@ flutter:
 
 These configurations will generate **`assets.gen.dart`** under the **`lib/gen/`** directory by default.
 
+#### Flavored assets
+
+Flutter supports
+[Conditionally bundling assets based on flavor](https://docs.flutter.dev/deployment/flavors#conditionally-bundling-assets-based-on-flavor).
+Assets are only available with flavors if specified.
+`flutter_gen` will generate the specified `flavors` for assets regardless the current flavor.
+The `flavors` field accessible though `.flavors`, for example:
+
+```dart
+print(MyAssets.images.chip4.flavors); // -> {'extern'}
+```
+
+#### Excluding generating for assets
+
+You can specify `flutter_gen > assets > exclude` using `Glob` patterns to exclude particular assets.
+
+```yaml
+flutter_gen:
+  assets:
+    exclude:
+      - folder-your-want-to-exclude/**
+      - specified-asset.jpg
+```
+
+See more patterns with the `package:glob`.
+
+#### Generate for packages
+
+If you want to generate assets for a package,
+use `package_parameter_enabled` under `flutter_gen > assets > outputs`.
+
+```yaml
+flutter_gen:
+  assets:
+    outputs:
+      package_parameter_enabled: true # <- Add this line.
+```
+
+This would add the package constant to the generated class. For example:
+
+```dart
+class Assets {
+  const Assets._();
+
+  static const String package = 'test';
+
+  static const $AssetsImagesGen images = $AssetsImagesGen();
+  static const $AssetsUnknownGen unknown = $AssetsUnknownGen();
+}
+```
+
+Then you can use assets with the package implicitly or explicitly:
+
+```dart
+// Implicit usage for `Image`/`SvgPicture`/`Lottie`.
+Widget build(BuildContext context) {
+  return Assets.images.icons.paint.svg(
+    width: 120,
+    height: 120,
+  );
+}
+```
+or
+```dart
+// Explicit usage for `Image`/`SvgPicture`/`Lottie`.
+Widget build(BuildContext context) {
+  return SvgPicture.asset(
+    Assets.images.icons.paint.path,
+    package: Assets.package,
+    width: 120,
+    height: 120,
+  );
+}
+```
+
+#### Generate directories path
+
+If you want to generate the path of directories,
+use `directory_path_enabled` under `flutter_gen > assets > outputs`.
+
+```yaml
+flutter_gen:
+  assets:
+    outputs:
+      directory_path_enabled: true # <- Add this line.
+```
+
+This would add the `path` getter to the generated directory class. For example:
+
+```dart
+class $AssetsImagesGen {
+  const $AssetsImagesGen();
+
+  ///******///
+
+  /// Directory path: assets/images
+  String get path => 'assets/images';
+}
+```
+
+#### Including additional metadata
+
+At build time, additional metadata may be included in the generated class, by using the
+`parse_metadata` option.
+
+```yaml
+flutter_gen:
+  parse_metadata: true # <- Add this line (default: false)
+```
+
+For image based assets, a new nullable `size` field is added to the
+generated class. For example:
+
+```dart
+AssetGenImage get logo => 
+  const AssetGenImage('assets/images/logo.png', size: Size(209.0, 49.0));
+```
+
+Which can now be used at runtime without parsing the information from the actual asset.
+
+```dart
+Widget build(BuildContext context) {
+  return Assets.images.logo.size!.width;
+}
+```
+
 #### Usage Example
 
 [FlutterGen] generates [Image](https://api.flutter.dev/flutter/widgets/Image-class.html) class if the asset is Flutter supported image format.
@@ -175,11 +348,13 @@ Example results of `assets/images/chip.jpg`:
 
 - **`Assets.images.chip`** is an implementation of [`AssetImage class`](https://api.flutter.dev/flutter/painting/AssetImage-class.html).
 - **`Assets.images.chip.image(...)`** returns [`Image class`](https://api.flutter.dev/flutter/widgets/Image-class.html).
+- **`Assets.images.chip.provider(...)`** returns [`ImageProvider class`](https://api.flutter.dev/flutter/painting/ImageProvider-class.html).
 - **`Assets.images.chip.path`** just returns the path string.
+- **`Assets.images.chip.values`** just returns the values list.
 
 ```dart
 Widget build(BuildContext context) {
-  return Image(image: Assets.images.chip);
+  return Assets.images.chip.image();
 }
 
 Widget build(BuildContext context) {
@@ -194,6 +369,15 @@ Widget build(BuildContext context) {
   return Image.asset(Assets.images.chip.path);
 }
 
+```
+
+If you do not want to generate `AssetGenImage`, set `flutter_gen > integrations > image` to `false`.
+
+```yaml
+# pubspec.yaml
+flutter_gen:
+  integrations:
+    image: false
 ```
 
 If you are using SVG images with [flutter_svg](https://pub.dev/packages/flutter_svg) you can use the integration feature.
@@ -220,13 +404,13 @@ Widget build(BuildContext context) {
 
 **Available Integrations**
 
-|Packages|File extension|Setting|Usage|
-|--|--|--|--|
-|[flutter_svg](https://pub.dev/packages/flutter_svg)|.svg| `flutter_svg: true` |Assets.images.icons.paint.**svg()**|
-|[flare_flutter](https://pub.dev/packages/flare_flutter)|.flr| `flare_flutter: true` |Assets.flare.penguin.**flare()**|
-|[rive](https://pub.dev/packages/rive)|.flr| `rive: true` |Assets.rive.vehicles.**rive()**|
+| Packages                                                | File extension       | Setting               | Usage                                     |
+|---------------------------------------------------------|----------------------|-----------------------|-------------------------------------------|
+| [flutter_svg](https://pub.dev/packages/flutter_svg)     | .svg                 | `flutter_svg: true`   | Assets.images.icons.paint.**svg()**       |
+| [rive](https://pub.dev/packages/rive)                   | .riv                 | `rive: true`          | Assets.rive.vehicles.**rive()**           |
+| [lottie](https://pub.dev/packages/lottie)               | .json, .zip, .lottie, .tgs | `lottie: true`        | Assets.lottie.hamburgerArrow.**lottie()** |
 
-<br/>
+**Note:** For [lottie](https://pub.dev/packages/lottie) integration with `.lottie` and `.tgs` files, you must add a custom decoder via `decoder` parameter, see [lottie's document](https://pub.dev/packages/lottie#telegram-stickers-tgs-and-dotlottie-lottie) for more information.
 
 In other cases, the asset is generated as String class.
 
@@ -243,14 +427,15 @@ final json = await rootBundle.loadString(Assets.json.fruits);
 # pubspec.yaml
 flutter_gen:
   assets:
-    # Assets.imagesChip
-    # style: camel-case
+    outputs: 
+      # Assets.imagesChip
+      # style: camel-case
 
-    # Assets.images_chip
-    # style: snake-case
+      # Assets.images_chip
+      # style: snake-case
 
-    # Assets.images.chip (default style)
-    # style: dot-delimiter
+      # Assets.images.chip (default style)
+      # style: dot-delimiter
 
 flutter:
   assets:
@@ -268,278 +453,7 @@ assets/json/fruits.json           => Assets.json.fruits
 pictures/ocean_view.jpg           => Assets.pictures.oceanView
 ```
 
-<details><summary>Example of code generated by FlutterGen</summary>
-<p>
-
-```dart
-/// GENERATED CODE - DO NOT MODIFY BY HAND
-/// *****************************************************
-///  FlutterGen
-/// *****************************************************
-
-import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter/services.dart';
-import 'package:flare_flutter/flare_actor.dart';
-import 'package:flare_flutter/flare_controller.dart';
-import 'package:rive/rive.dart';
-
-class $PicturesGen {
-  const $PicturesGen();
-
-  AssetGenImage get chip5 => const AssetGenImage('pictures/chip5.jpg');
-}
-
-class $AssetsFlareGen {
-  const $AssetsFlareGen();
-
-  FlareGenImage get penguin => const FlareGenImage('assets/flare/Penguin.flr');
-}
-
-class $AssetsImagesGen {
-  const $AssetsImagesGen();
-
-  AssetGenImage get chip1 => const AssetGenImage('assets/images/chip1.jpg');
-  AssetGenImage get chip2 => const AssetGenImage('assets/images/chip2.jpg');
-  $AssetsImagesChip3Gen get chip3 => const $AssetsImagesChip3Gen();
-  $AssetsImagesChip4Gen get chip4 => const $AssetsImagesChip4Gen();
-  $AssetsImagesIconsGen get icons => const $AssetsImagesIconsGen();
-  AssetGenImage get logo => const AssetGenImage('assets/images/logo.png');
-  AssetGenImage get profile => const AssetGenImage('assets/images/profile.jpg');
-}
-
-class $AssetsJsonGen {
-  const $AssetsJsonGen();
-
-  String get fruits => 'assets/json/fruits.json';
-}
-
-class $AssetsMovieGen {
-  const $AssetsMovieGen();
-
-  String get theEarth => 'assets/movie/the_earth.mp4';
-}
-
-class $AssetsUnknownGen {
-  const $AssetsUnknownGen();
-
-  String get unknownMimeType => 'assets/unknown/unknown_mime_type.bk';
-}
-
-class $AssetsImagesChip3Gen {
-  const $AssetsImagesChip3Gen();
-
-  AssetGenImage get chip3 =>
-      const AssetGenImage('assets/images/chip3/chip3.jpg');
-}
-
-class $AssetsImagesChip4Gen {
-  const $AssetsImagesChip4Gen();
-
-  AssetGenImage get chip4 =>
-      const AssetGenImage('assets/images/chip4/chip4.jpg');
-}
-
-class $AssetsImagesIconsGen {
-  const $AssetsImagesIconsGen();
-
-  SvgGenImage get dartTest =>
-      const SvgGenImage('assets/images/icons/dart@test.svg');
-  SvgGenImage get fuchsia =>
-      const SvgGenImage('assets/images/icons/fuchsia.svg');
-  SvgGenImage get kmm => const SvgGenImage('assets/images/icons/kmm.svg');
-  SvgGenImage get paint => const SvgGenImage('assets/images/icons/paint.svg');
-}
-
-class Assets {
-  Assets._();
-
-  static const $AssetsFlareGen flare = $AssetsFlareGen();
-  static const $AssetsImagesGen images = $AssetsImagesGen();
-  static const $AssetsJsonGen json = $AssetsJsonGen();
-  static const $AssetsMovieGen movie = $AssetsMovieGen();
-  static const $AssetsUnknownGen unknown = $AssetsUnknownGen();
-  static const $PicturesGen pictures = $PicturesGen();
-}
-
-class AssetGenImage extends AssetImage {
-  const AssetGenImage(String assetName)
-      : _assetName = assetName,
-        super(assetName);
-  final String _assetName;
-
-  Image image({
-    Key key,
-    ImageFrameBuilder frameBuilder,
-    ImageLoadingBuilder loadingBuilder,
-    ImageErrorWidgetBuilder errorBuilder,
-    String semanticLabel,
-    bool excludeFromSemantics = false,
-    double width,
-    double height,
-    Color color,
-    BlendMode colorBlendMode,
-    BoxFit fit,
-    AlignmentGeometry alignment = Alignment.center,
-    ImageRepeat repeat = ImageRepeat.noRepeat,
-    Rect centerSlice,
-    bool matchTextDirection = false,
-    bool gaplessPlayback = false,
-    bool isAntiAlias = false,
-    FilterQuality filterQuality = FilterQuality.low,
-  }) {
-    return Image(
-      key: key,
-      image: this,
-      frameBuilder: frameBuilder,
-      loadingBuilder: loadingBuilder,
-      errorBuilder: errorBuilder,
-      semanticLabel: semanticLabel,
-      excludeFromSemantics: excludeFromSemantics,
-      width: width,
-      height: height,
-      color: color,
-      colorBlendMode: colorBlendMode,
-      fit: fit,
-      alignment: alignment,
-      repeat: repeat,
-      centerSlice: centerSlice,
-      matchTextDirection: matchTextDirection,
-      gaplessPlayback: gaplessPlayback,
-      isAntiAlias: isAntiAlias,
-      filterQuality: filterQuality,
-    );
-  }
-
-  String get path => _assetName;
-}
-
-class SvgGenImage {
-  const SvgGenImage(this._assetName);
-
-  final String _assetName;
-
-  SvgPicture svg({
-    Key key,
-    bool matchTextDirection = false,
-    AssetBundle bundle,
-    String package,
-    double width,
-    double height,
-    BoxFit fit = BoxFit.contain,
-    AlignmentGeometry alignment = Alignment.center,
-    bool allowDrawingOutsideViewBox = false,
-    WidgetBuilder placeholderBuilder,
-    Color color,
-    BlendMode colorBlendMode = BlendMode.srcIn,
-    String semanticsLabel,
-    bool excludeFromSemantics = false,
-    Clip clipBehavior = Clip.hardEdge,
-    bool cacheColorFilter = false,
-    SvgTheme? theme,
-  }) {
-    return SvgPicture.asset(
-      _assetName,
-      key: key,
-      matchTextDirection: matchTextDirection,
-      bundle: bundle,
-      package: package,
-      width: width,
-      height: height,
-      fit: fit,
-      alignment: alignment,
-      allowDrawingOutsideViewBox: allowDrawingOutsideViewBox,
-      placeholderBuilder: placeholderBuilder,
-      color: color,
-      colorBlendMode: colorBlendMode,
-      semanticsLabel: semanticsLabel,
-      excludeFromSemantics: excludeFromSemantics,
-      clipBehavior: clipBehavior,
-      cacheColorFilter: cacheColorFilter,
-      theme: theme,
-    );
-  }
-
-  String get path => _assetName;
-}
-
-class FlareGenImage {
-  const FlareGenImage(this._assetName);
-
-  final String _assetName;
-
-  FlareActor flare({
-    String boundsNode,
-    String animation,
-    BoxFit fit = BoxFit.contain,
-    Alignment alignment = Alignment.center,
-    bool isPaused = false,
-    bool snapToEnd = false,
-    FlareController controller,
-    FlareCompletedCallback callback,
-    Color color,
-    bool shouldClip = true,
-    bool sizeFromArtboard = false,
-    String artboard,
-    bool antialias = true,
-  }) {
-    return FlareActor(
-      _assetName,
-      boundsNode: boundsNode,
-      animation: animation,
-      fit: fit,
-      alignment: alignment,
-      isPaused: isPaused,
-      snapToEnd: snapToEnd,
-      controller: controller,
-      callback: callback,
-      color: color,
-      shouldClip: shouldClip,
-      sizeFromArtboard: sizeFromArtboard,
-      artboard: artboard,
-      antialias: antialias,
-    );
-  }
-
-  String get path => _assetName;
-}
-
-class RiveGenImage {
-  const RiveGenImage(this._assetName);
-
-  final String _assetName;
-
-  RiveAnimation rive({
-    String? artboard,
-    List<String> animations = const [],
-    List<String> stateMachines = const [],
-    BoxFit? fit,
-    Alignment? alignment,
-    Widget? placeHolder,
-    bool antialiasing = true,
-    List<RiveAnimationController> controllers = const [],
-    OnInitCallback? onInit,
-  }) {
-    return RiveAnimation.asset(
-      _assetName,
-      artboard: artboard,
-      animations: animations,
-      stateMachines: stateMachines,
-      fit: fit,
-      alignment: alignment,
-      placeHolder: placeHolder,
-      antialiasing: antialiasing,
-      controllers: controllers,
-      onInit: onInit,
-    );
-  }
-
-  String get path => _assetName;
-}
-```
-
-</p>
-</details>
+[Example of code generated by FlutterGen](https://github.com/FlutterGen/flutter_gen/blob/main/examples/example/lib/gen/assets.gen.dart)
 
 ### Fonts
 
@@ -565,6 +479,31 @@ flutter:
 
 These configurations will generate **`fonts.gen.dart`** under the **`lib/gen/`** directory by default.
 
+#### Generate for packages
+
+If you want to generate fonts for a package,
+use `package_parameter_enabled` under `flutter_gen > fonts > outputs`.
+
+```yaml
+flutter_gen:
+  fonts:
+    outputs:
+      package_parameter_enabled: true # <- Add this line.
+```
+
+This would add the package constant to the generated class. For example:
+
+```dart
+class Fonts {
+  Fonts._();
+
+  static const String package = 'test';
+
+  static const String raleway = 'packages/$package/Raleway';
+  static const String robotoMono = 'packages/$package/RobotoMono';
+}
+```
+
 #### Usage Example
 
 ```dart
@@ -574,32 +513,14 @@ Text(
     fontFamily: FontFamily.robotoMono,
     fontFamilyFallback: const [FontFamily.raleway],
   ),
+)
 ```
 
-<details><summary>Example of code generated by FlutterGen</summary>
-<p>
-
-```dart
-/// GENERATED CODE - DO NOT MODIFY BY HAND
-/// *****************************************************
-///  FlutterGen
-/// *****************************************************
-
-class FontFamily {
-  FontFamily._();
-
-  static const String raleway = 'Raleway';
-  static const String robotoMono = 'RobotoMono';
-}
-
-```
-
-</p>
-</details>
+[Example of code generated by FlutterGen](https://github.com/FlutterGen/flutter_gen/tree/main/examples/example/lib/gen/fonts.gen.dart)
 
 ### Colors
 
-[FlutterGen] supports generating colors from [XML](example/assets/color/colors.xml) format files.  
+[FlutterGen] supports generating colors from [XML](examples/example/assets/color/colors.xml) format files.  
 _Ignore duplicated._
 
 ```yaml
@@ -639,123 +560,7 @@ Text(
   ),
 ```
 
-<details><summary>Example of code generated by FlutterGen</summary>
-<p>
-
-```dart
-/// GENERATED CODE - DO NOT MODIFY BY HAND
-/// *****************************************************
-///  FlutterGen
-/// *****************************************************
-
-import 'package:flutter/painting.dart';
-import 'package:flutter/material.dart';
-
-class ColorName {
-  ColorName._();
-
-  static const Color black = Color(0xFF000000);
-  static const Color black30 = Color(0x4D000000);
-  static const Color black40 = Color(0x66000000);
-  static const Color black50 = Color(0x80000000);
-  static const Color black60 = Color(0x99000000);
-  static const MaterialColor crimsonRed = MaterialColor(
-    0xFFCF2A2A,
-    <int, Color>{
-      50: Color(0xFFF9E5E5),
-      100: Color(0xFFF1BFBF),
-      200: Color(0xFFE79595),
-      300: Color(0xFFDD6A6A),
-      400: Color(0xFFD64A4A),
-      500: Color(0xFFCF2A2A),
-      600: Color(0xFFCA2525),
-      700: Color(0xFFC31F1F),
-      800: Color(0xFFBD1919),
-      900: Color(0xFFB20F0F),
-    },
-  );
-  static const Color gray410 = Color(0xFF979797);
-  static const Color gray70 = Color(0xFFEEEEEE);
-  static const Color white = Color(0xFFFFFFFF);
-  static const MaterialColor yellowOcher = MaterialColor(
-    0xFFDF9527,
-    <int, Color>{
-      50: Color(0xFFFBF2E5),
-      100: Color(0xFFF5DFBE),
-      200: Color(0xFFEFCA93),
-      300: Color(0xFFE9B568),
-      400: Color(0xFFE4A547),
-      500: Color(0xFFDF9527),
-      600: Color(0xFFDB8D23),
-      700: Color(0xFFD7821D),
-      800: Color(0xFFD27817),
-      900: Color(0xFFCA670E),
-    },
-  );
-  static const MaterialAccentColor yellowOcherAccent = MaterialAccentColor(
-    0xFFFFBCA3,
-    <int, Color>{
-      100: Color(0xFFFFE8E0),
-      200: Color(0xFFFFBCA3),
-      400: Color(0xFFFFA989),
-      700: Color(0xFFFF9E7A),
-    },
-  );
-}
-
-```
-
-</p>
-</details>
-
-### Default Configuration
-
-The following are the default settings.
-The options you set in `pubspec.yaml` will override the corresponding default options.
-
-```yaml
-flutter_gen:
-  # Optional
-  output: lib/gen/
-  # Optional
-  line_length: 80
-
-  # Optional
-  integrations:
-    flutter_svg: false
-    flare_flutter: false
-    rive: false
-
-  assets:
-    # Optional
-    enabled: true
-    # Optional
-    # Set to true if you want this package to be a package dependency
-    # See: https://flutter.dev/docs/development/ui/assets-and-images#from-packages
-    package_parameter_enabled: false
-    # Optional
-    # Avaliable values:
-    # - camel-case
-    # - snake-case
-    # - dot-delimiter
-    style: dot-delimiter
-    
-  fonts:
-    # Optional
-    enabled: true
-
-  colors:
-    # Optional
-    enabled: true
-    # Optional
-    inputs: []
-
-flutter:
-  # See: https://flutter.dev/docs/development/ui/assets-and-images#specifying-assets
-  assets: []
-  # See: https://flutter.dev/docs/cookbook/design/fonts#2-declare-the-font-in-the-pubspec
-  fonts: []
-```
+[Example of code generated by FlutterGen](https://github.com/FlutterGen/flutter_gen/tree/main/examples/example/lib/gen/colors.gen.dart)
 
 ## Credits
 
@@ -767,6 +572,50 @@ Please file [FlutterGen] specific issues, bugs, or feature requests in our [issu
 
 Plugin issues that are not specific to [FlutterGen] can be filed in the [Flutter issue tracker](https://github.com/flutter/flutter/issues/new).
 
+### Known Issues
+
+#### Bad State: No Element when using build_runner
+If you get an error message like this:
+```
+[SEVERE] flutter_gen_runner:flutter_gen_runner on $package$:
+
+Bad state: No element
+[SEVERE] Failed after 16.0s
+```
+
+The you most likely have a customized `build.yaml` to configure the build runner. In that case, all you have to do is to add the `pubspec.yaml` as build source to your `build.yaml`
+
+```yaml
+targets:
+  $default:
+    sources:
+      include:
+        - pubspec.yaml  # add this line
+        - ...
+```
+
+See #268 for the corresponding issue discussion.
+
+### Error with [internationalization](https://docs.flutter.dev/development/accessibility-and-localization/internationalization)
+
+Please try to remove `generate: true` in your `pubspec.yaml` and disable `synthetic-package` in your `l10n.yaml` like:
+
+```yaml
+# pubspec.yaml
+flutter:
+  generate: true <--- ⚠️Remove this line⚠️
+```
+
+```yaml
+# l10n.yaml
+arb-dir: lib/l10n
+template-arb-file: app_en.arb
+output-localization-file: app_localizations.dart
+synthetic-package: false <--- ⚠️Add this line⚠️
+```
+
+If you get 
+
 ## Contributing
 
 **We are looking for co-developers.**
@@ -777,10 +626,3 @@ and open a [pull request](https://github.com/FlutterGen/flutter_gen/pulls).
 
 [build_runner]: https://pub.dev/packages/build_runner
 [fluttergen]: https://pub.dev/packages/flutter_gen
-
-<br />
-<a href="https://github.com/fluttergen/flutter_gen/graphs/contributors"><img src="https://opencollective.com/fluttergen/contributors.svg?width=890&button=false" /></a>
-<br />
-<br />
-<br />
-<br />

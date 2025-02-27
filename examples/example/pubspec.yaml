@@ -1,0 +1,113 @@
+name: example
+description: A sample project using FlutterGen.
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+  flutter: '>=3.16.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  example_resources:
+    path: ../example_resources
+
+  flutter_svg: ^2.0.0
+  lottie: ^3.0.0
+  rive: ^0.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_gen_runner:
+    path: ../../packages/runner
+
+  lints: ^2.0.0
+  build_runner: ^2.0.0
+
+flutter_gen:
+  output: lib/gen/ # Optional (default: lib/gen/)
+  line_length: 80 # Optional (default: 80)
+
+  integrations:
+    flutter_svg: true
+    rive: true
+    lottie: true
+
+  assets:
+    enabled: true
+
+    outputs:
+      class_name: MyAssets
+      package_parameter_enabled: false
+      # Assets.imagesChip
+      # style: camel-case
+
+      # Assets.images_chip
+      # style: snake-case
+
+      # Assets.images.chip (default style)
+      style: dot-delimiter
+
+    exclude:
+      - assets-extern/*
+      - pictures/chip5.jpg
+
+  fonts:
+    enabled: true
+    outputs:
+      class_name: MyFontFamily
+
+  colors:
+    enabled: true
+    outputs:
+      class_name: MyColorName
+    inputs:
+      - assets/color/colors.xml
+      - assets/color/colors2.xml
+      - assets/color/colors2.xml # duplicated
+
+flutter:
+  uses-material-design: true
+  assets:
+    - README.md
+    - assets/images/
+    - assets/images/chip3/chip3.jpg
+    - assets/images/chip3/chip3.jpg # duplicated
+    - assets/images/icons/fuchsia.svg
+    - assets/images/icons/kmm.svg
+    - assets/images/icons/paint.svg
+    - assets/images/icons/dart@test.svg
+    - assets/json/
+    - assets/flare/
+    - assets/rive/
+    - assets/lottie/
+    - assets/lottie/wrong/
+    - assets/movie/
+    - assets/unknown/
+    - assets/mix/
+    - assets-extern/
+    - pictures/chip5.jpg
+
+    - path: assets/images/chip4/chip4.jpg
+      flavors:
+        - extern
+  fonts:
+    - family: Raleway
+      fonts:
+        - asset: assets/fonts/Raleway-Regular.ttf
+        - asset: assets/fonts/Raleway-Italic.ttf
+          style: italic
+    - family: RobotoMono
+      fonts:
+        - asset: assets/fonts/RobotoMono-Regular.ttf
+        - asset: assets/fonts/RobotoMono-Bold.ttf
+          weight: 700
+
+    # duplicated
+    - family: RobotoMono
+      fonts:
+        - asset: assets/fonts/RobotoMono-Regular.ttf
+        - asset: assets/fonts/RobotoMono-Bold.ttf
+          weight: 700

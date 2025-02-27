@@ -1,21 +1,31 @@
-import '../../settings/asset_type.dart';
-import 'integration.dart';
+import 'package:flutter_gen_core/generators/integrations/integration.dart';
 
 class RiveIntegration extends Integration {
+  RiveIntegration(String packageName) : super(packageName);
+
+  String? get packageExpression => isPackage ? 'packages/$packageName/' : null;
+
   @override
-  List<String> get requiredImports => [
-        'package:rive/rive.dart',
+  List<Import> get requiredImports => const [
+        Import('package:flutter/widgets.dart'),
+        Import('package:rive/rive.dart', alias: '_rive'),
       ];
 
   @override
   String get classOutput => _classDefinition;
 
-  final String _classDefinition = '''class RiveGenImage {
-  const RiveGenImage(this._assetName);
+  String get _classDefinition => '''class RiveGenImage {
+  const RiveGenImage(
+    this._assetName, {
+    this.flavors = const {},
+  });
 
   final String _assetName;
+  final Set<String> flavors;
 
-  RiveAnimation rive({
+${isPackage ? "\n  static const String package = '$packageName';" : ''}
+
+  _rive.RiveAnimation rive({
     String? artboard,
     List<String> animations = const [],
     List<String> stateMachines = const [],
@@ -23,11 +33,12 @@ class RiveIntegration extends Integration {
     Alignment? alignment,
     Widget? placeHolder,
     bool antialiasing = true,
-    List<RiveAnimationController> controllers = const [],
-    OnInitCallback? onInit,
+    bool useArtboardSize = false,
+    List<_rive.RiveAnimationController> controllers = const [],
+    _rive.OnInitCallback? onInit,
   }) {
-    return RiveAnimation.asset(
-      _assetName,
+    return _rive.RiveAnimation.asset(
+      ${isPackage ? '\'$packageExpression\$_assetName\'' : '_assetName'},
       artboard: artboard,
       animations: animations,
       stateMachines: stateMachines,
@@ -35,22 +46,22 @@ class RiveIntegration extends Integration {
       alignment: alignment,
       placeHolder: placeHolder,
       antialiasing: antialiasing,
+      useArtboardSize: useArtboardSize,
       controllers: controllers,
       onInit: onInit,
     );
   }
 
   String get path => _assetName;
+
+  String get keyName => ${isPackage ? '\'$packageExpression\$_assetName\'' : '_assetName'};
 }''';
 
   @override
   String get className => 'RiveGenImage';
 
   @override
-  String classInstantiate(String path) => 'RiveGenImage(\'$path\')';
-
-  @override
-  bool isSupport(AssetType type) => type.extension == '.riv';
+  bool isSupport(AssetType asset) => asset.extension == '.riv';
 
   @override
   bool get isConstConstructor => true;

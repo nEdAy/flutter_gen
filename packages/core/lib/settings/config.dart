@@ -1,59 +1,95 @@
 import 'dart:io';
 
+import 'package:flutter_gen_core/settings/config_default.dart';
+import 'package:flutter_gen_core/settings/pubspec.dart';
+import 'package:flutter_gen_core/utils/error.dart';
+import 'package:flutter_gen_core/utils/map.dart';
+import 'package:flutter_gen_core/version.gen.dart';
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
 
-import '../utils/map.dart';
-import 'pubspec.dart';
-
 class Config {
-  Config._({required this.pubspec});
+  const Config._({required this.pubspec, required this.pubspecFile});
 
   final Pubspec pubspec;
+  final File pubspecFile;
 }
 
-Future<Config> loadPubspecConfig(File pubspecFile) async {
-  stdout.writeln('FlutterGen Loading ... '
-      '${normalize(join(
-    basename(pubspecFile.parent.path),
-    basename(pubspecFile.path),
-  ))}');
-  final content = await pubspecFile.readAsString().catchError((dynamic error) {
-    throw FileSystemException(
-        'Cannot open pubspec.yaml: ${pubspecFile.absolute}');
-  });
-  final userMap = loadYaml(content) as Map?;
-  final defaultMap = loadYaml(_defaultConfig) as Map?;
-  final mergedMap = mergeMap([defaultMap, userMap]);
+Config loadPubspecConfig(File pubspecFile, {File? buildFile}) {
+  final pubspecLocaleHint = normalize(
+    join(basename(pubspecFile.parent.path), basename(pubspecFile.path)),
+  );
+
+  stdout.writeln('[FlutterGen] v$packageVersion Loading ...');
+
+  final defaultMap = loadYaml(configDefaultYamlContent) as Map?;
+
+  final pubspecContent = pubspecFile.readAsStringSync();
+  final pubspecMap = loadYaml(pubspecContent) as Map?;
+
+  var mergedMap = mergeMap([defaultMap, pubspecMap]);
+  stdout.writeln(
+    '[FlutterGen] Reading options from $pubspecLocaleHint',
+  );
+
+  YamlMap? getBuildFileOptions(File file) {
+    if (!file.existsSync()) {
+      return null;
+    }
+    final buildContent = file.readAsStringSync();
+    final rawMap = loadYaml(buildContent) as Map?;
+    final builders = rawMap?['targets']?[r'$default']?['builders'];
+    final optionBuildMap = (builders?['flutter_gen_runner'] ??
+        builders?['flutter_gen'])?['options'];
+    if (optionBuildMap is YamlMap && optionBuildMap.isNotEmpty) {
+      return optionBuildMap;
+    }
+    return null;
+  }
+
+  // Fallback to the build.yaml when no build file has been specified and
+  // the default one has valid configurations.
+  if (buildFile == null && getBuildFileOptions(File('build.yaml')) != null) {
+    buildFile = File('build.yaml');
+  }
+
+  if (buildFile != null) {
+    if (buildFile.existsSync()) {
+      final optionBuildMap = getBuildFileOptions(buildFile);
+      if (optionBuildMap != null) {
+        final buildMap = {'flutter_gen': optionBuildMap};
+        mergedMap = mergeMap([mergedMap, buildMap]);
+        final buildLocaleHint = normalize(
+          join(basename(buildFile.parent.path), basename(buildFile.path)),
+        );
+        stdout.writeln(
+          '[FlutterGen] Reading options from $buildLocaleHint',
+        );
+      } else {
+        stderr.writeln(
+          '[FlutterGen] Specified ${buildFile.path} as input but the file '
+          'does not contain valid options, ignoring...',
+        );
+      }
+    } else {
+      stderr.writeln(
+        '[FlutterGen] Specified ${buildFile.path} as input but the file '
+        'does not exists.',
+      );
+    }
+  }
+
   final pubspec = Pubspec.fromJson(mergedMap);
-  return Config._(pubspec: pubspec);
+  return Config._(pubspec: pubspec, pubspecFile: pubspecFile);
 }
 
-const _defaultConfig = '''
-name: $invalidStringValue
-
-flutter_gen:
-  output: lib/gen/
-  line_length: 80
-
-  integrations:
-    flutter_svg: false
-    flare_flutter: false
-    rive: false
-
-  assets:
-    enabled: true
-    package_parameter_enabled: false
-    style: dot-delimiter
-    
-  fonts:
-    enabled: true
-
-  colors:
-    enabled: true
-    inputs: []
-
-flutter:
-  assets: []
-  fonts: []
-''';
+Config? loadPubspecConfigOrNull(File pubspecFile, {File? buildFile}) {
+  try {
+    return loadPubspecConfig(pubspecFile, buildFile: buildFile);
+  } on FileSystemException catch (e) {
+    stderr.writeln(e.message);
+  } on InvalidSettingsException catch (e) {
+    stderr.writeln(e.message);
+  }
+  return null;
+}

@@ -3,79 +3,39 @@
 ///  FlutterGen
 /// *****************************************************
 
-// ignore_for_file: directives_ordering,unnecessary_import
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal,deprecated_member_use
 
 import 'package:flutter/widgets.dart';
-import 'package:rive/rive.dart';
+import 'package:rive/rive.dart' as _rive;
 
 class $AssetsRiveGen {
   const $AssetsRiveGen();
 
   /// File path: assets/rive/vehicles.riv
   RiveGenImage get vehicles => const RiveGenImage('assets/rive/vehicles.riv');
+
+  /// List of all assets
+  List<RiveGenImage> get values => [vehicles];
 }
 
 class Assets {
-  Assets._();
+  const Assets._();
 
   static const $AssetsRiveGen rive = $AssetsRiveGen();
 }
 
-class AssetGenImage extends AssetImage {
-  const AssetGenImage(String assetName) : super(assetName);
-
-  Image image({
-    Key? key,
-    ImageFrameBuilder? frameBuilder,
-    ImageLoadingBuilder? loadingBuilder,
-    ImageErrorWidgetBuilder? errorBuilder,
-    String? semanticLabel,
-    bool excludeFromSemantics = false,
-    double? width,
-    double? height,
-    Color? color,
-    BlendMode? colorBlendMode,
-    BoxFit? fit,
-    AlignmentGeometry alignment = Alignment.center,
-    ImageRepeat repeat = ImageRepeat.noRepeat,
-    Rect? centerSlice,
-    bool matchTextDirection = false,
-    bool gaplessPlayback = false,
-    bool isAntiAlias = false,
-    FilterQuality filterQuality = FilterQuality.low,
-  }) {
-    return Image(
-      key: key,
-      image: this,
-      frameBuilder: frameBuilder,
-      loadingBuilder: loadingBuilder,
-      errorBuilder: errorBuilder,
-      semanticLabel: semanticLabel,
-      excludeFromSemantics: excludeFromSemantics,
-      width: width,
-      height: height,
-      color: color,
-      colorBlendMode: colorBlendMode,
-      fit: fit,
-      alignment: alignment,
-      repeat: repeat,
-      centerSlice: centerSlice,
-      matchTextDirection: matchTextDirection,
-      gaplessPlayback: gaplessPlayback,
-      isAntiAlias: isAntiAlias,
-      filterQuality: filterQuality,
-    );
-  }
-
-  String get path => assetName;
-}
-
 class RiveGenImage {
-  const RiveGenImage(this._assetName);
+  const RiveGenImage(
+    this._assetName, {
+    this.flavors = const {},
+  });
 
   final String _assetName;
+  final Set<String> flavors;
 
-  RiveAnimation rive({
+  _rive.RiveAnimation rive({
     String? artboard,
     List<String> animations = const [],
     List<String> stateMachines = const [],
@@ -83,10 +43,11 @@ class RiveGenImage {
     Alignment? alignment,
     Widget? placeHolder,
     bool antialiasing = true,
-    List<RiveAnimationController> controllers = const [],
-    OnInitCallback? onInit,
+    bool useArtboardSize = false,
+    List<_rive.RiveAnimationController> controllers = const [],
+    _rive.OnInitCallback? onInit,
   }) {
-    return RiveAnimation.asset(
+    return _rive.RiveAnimation.asset(
       _assetName,
       artboard: artboard,
       animations: animations,
@@ -95,10 +56,13 @@ class RiveGenImage {
       alignment: alignment,
       placeHolder: placeHolder,
       antialiasing: antialiasing,
+      useArtboardSize: useArtboardSize,
       controllers: controllers,
       onInit: onInit,
     );
   }
 
   String get path => _assetName;
+
+  String get keyName => _assetName;
 }

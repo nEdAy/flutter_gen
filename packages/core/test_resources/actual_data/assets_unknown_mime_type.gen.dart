@@ -3,68 +3,22 @@
 ///  FlutterGen
 /// *****************************************************
 
-// ignore_for_file: directives_ordering,unnecessary_import
-
-import 'package:flutter/widgets.dart';
+// coverage:ignore-file
+// ignore_for_file: type=lint
+// ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal,deprecated_member_use
 
 class $AssetsUnknownGen {
   const $AssetsUnknownGen();
 
   /// File path: assets/unknown/unknown_mime_type.bk
   String get unknownMimeType => 'assets/unknown/unknown_mime_type.bk';
+
+  /// List of all assets
+  List<String> get values => [unknownMimeType];
 }
 
 class Assets {
-  Assets._();
+  const Assets._();
 
   static const $AssetsUnknownGen unknown = $AssetsUnknownGen();
-}
-
-class AssetGenImage extends AssetImage {
-  const AssetGenImage(String assetName) : super(assetName);
-
-  Image image({
-    Key? key,
-    ImageFrameBuilder? frameBuilder,
-    ImageLoadingBuilder? loadingBuilder,
-    ImageErrorWidgetBuilder? errorBuilder,
-    String? semanticLabel,
-    bool excludeFromSemantics = false,
-    double? width,
-    double? height,
-    Color? color,
-    BlendMode? colorBlendMode,
-    BoxFit? fit,
-    AlignmentGeometry alignment = Alignment.center,
-    ImageRepeat repeat = ImageRepeat.noRepeat,
-    Rect? centerSlice,
-    bool matchTextDirection = false,
-    bool gaplessPlayback = false,
-    bool isAntiAlias = false,
-    FilterQuality filterQuality = FilterQuality.low,
-  }) {
-    return Image(
-      key: key,
-      image: this,
-      frameBuilder: frameBuilder,
-      loadingBuilder: loadingBuilder,
-      errorBuilder: errorBuilder,
-      semanticLabel: semanticLabel,
-      excludeFromSemantics: excludeFromSemantics,
-      width: width,
-      height: height,
-      color: color,
-      colorBlendMode: colorBlendMode,
-      fit: fit,
-      alignment: alignment,
-      repeat: repeat,
-      centerSlice: centerSlice,
-      matchTextDirection: matchTextDirection,
-      gaplessPlayback: gaplessPlayback,
-      isAntiAlias: isAntiAlias,
-      filterQuality: filterQuality,
-    );
-  }
-
-  String get path => assetName;
 }
